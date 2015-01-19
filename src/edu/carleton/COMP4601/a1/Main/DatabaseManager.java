@@ -61,7 +61,8 @@ public class DatabaseManager {
 
 		try {
 			DBCollection col = this.getDocumentCollection();
-			//col.insert(document);
+			col.insert(buildDBObject(document));
+			
 		} catch (MongoException e) {
 			System.out.println("MongoException: " + e.getLocalizedMessage());
 			return false;
@@ -74,7 +75,7 @@ public class DatabaseManager {
 
 		try {
 			DBCollection col = this.getDocumentCollection();
-			//col.update(oldDocument, newDocument);
+			col.update(buildDBObject(oldDocument), buildDBObject(newDocument));
 
 		} catch (MongoException e) {
 			System.out.println("MongoException: " + e.getLocalizedMessage());
@@ -118,9 +119,22 @@ public class DatabaseManager {
 
 	}
 
-	public int getAccountCollectionSize() {
+	public int getDocumentCollectionSize() {
 		DBCollection col = this.getDocumentCollection();
 		return (int) col.getCount();
+	}
+	
+	public BasicDBObject buildDBObject(Document document) {
+		
+		BasicDBObject newObj = new BasicDBObject();
+		newObj.put("id", document.getId());
+		newObj.put("name", document.getName());
+		newObj.put("score", document.getScore());
+		newObj.put("text", document.getText());
+		newObj.put("tags", document.getTags());
+		newObj.put("links", document.getLinks());
+		return newObj;
+		
 	}
 
 	public static DatabaseManager getInstance() {
