@@ -6,16 +6,21 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+
+import edu.carleton.COMP4601.a1.Model.Document;
 
 @Path("/sda")
 public class SDA {
@@ -37,7 +42,7 @@ public class SDA {
 	}
 
 	@GET
-	@Produces(MediaType.TEXT_XML)
+	@Produces(MediaType.APPLICATION_XML)
 	public String sayXML() {
 		return "<?xml version=\"1.0\"?>" + "<sda> " + name + " </sda>";
 	}
@@ -49,38 +54,51 @@ public class SDA {
 				+ "</body></h1>" + "</html> ";
 	}
 	
+	@GET
+	@Path("documents")
+	@Produces(MediaType.APPLICATION_XML)
+	public ArrayList<Document> getDocumentsXML() {
+		return null;
+	}
+	
+	@GET
+	@Path("documents")
+	@Produces(MediaType.TEXT_HTML)
+	public ArrayList<Document> getDocumentsHTML() {
+		return null;
+	}
+	
+	@GET
+	@Path("{id}")
+	public DocumentAction getDocument(@PathParam("id") String id) {
+		return new DocumentAction(uriInfo, request, id);
+	}
+	
+	@DELETE
+	@Path("{id}")
+	public DocumentAction deleteDocument(@PathParam("id") String id) {
+		return new DocumentAction(uriInfo, request, id);
+	}
 	
 	@POST
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public Response newAccount(@FormParam("name") String id,
+	public DocumentAction postDocument(@FormParam("id") String id,
+			@FormParam("name") String name,
 			@FormParam("text") String text,
-			@FormParam("tags") List<String> tags,
-			@FormParam("links") List<String> links,
+		//	@FormParam("tags") ArrayList<String> tags,
+		//	@FormParam("links") ArrayList<String> links,
 			@Context HttpServletResponse servletResponse) throws IOException {
 
-		if(id == null || text == null || tags == null) {
-			return Response.status(400).build();
-		}
-		
-		
-		
-		return Response.ok().build();
-		
-		/*
-		String newDescription = description;
-		if (newDescription == null)
-			newDescription = "";
+		return new DocumentAction(uriInfo, request, id);
+	}
+	
+	@PUT
+	public DocumentAction updateDocument(@FormParam("id") String id,
+			@FormParam("name") String name,
+			@FormParam("text") String text,
+		//	@FormParam("tags") ArrayList<String> tags,
+		//	@FormParam("links") ArrayList<String> links,
+			@Context HttpServletResponse servletResponse) throws IOException {
 
-		int newId = new Integer(id).intValue();
-		int newBalance = new Integer(balance).intValue();
-		
-		if(newBalance > 0) {
-			Accounts.getInstance().open(newId, newBalance, newDescription);
-			servletResponse.sendRedirect("../create_account.html");
-		} else {
-			servletResponse.sendRedirect("../error.html");
-		}*/
-		
-		
+		return new DocumentAction(uriInfo, request, id);
 	}
 }

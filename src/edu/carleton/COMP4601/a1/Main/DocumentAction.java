@@ -3,6 +3,7 @@ package edu.carleton.COMP4601.a1.Main;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -30,7 +31,7 @@ public class DocumentAction extends Action {
 		}
 		return a;
 	}
-	/*
+	
 	@GET
 	@Produces(MediaType.TEXT_HTML)
 	public Document getDocumentHTML() {
@@ -40,29 +41,65 @@ public class DocumentAction extends Action {
 		}
 		return a;
 	}
-*/
+	
+	@POST
+	@Consumes(MediaType.APPLICATION_XML)
+	public Response postDocument(JAXBElement<Document> doc) {
+		Document d = doc.getValue();
+		return postAndGetResponse(d);
+	}
+	
 	@PUT
 	@Consumes(MediaType.APPLICATION_XML)
-	public Response putAccount(JAXBElement<Document> doc) {
-		Document d = doc.getValue();
-		return putAndGetResponse(d);
+	public Response updateDocument(JAXBElement<Document> doc) {
+		Response res;
+		Document oldDocument = DatabaseManager.getInstance().findDocument(Integer.parseInt(id));
+		Document newDocument = doc.getValue();
+		
+		if(oldDocument == null) {
+			res = Response.noContent().build();
+		}
+		else {
+			if(DatabaseManager.getInstance().updateDocument(newDocument, oldDocument)) {
+				res = Response.ok().build();
+			}
+			else {
+				res = Response.noContent().build();
+			}
+		}
+		return res;
 	}
 
 	@DELETE
-	public void deleteAccount() {
-		if (DatabaseManager.getInstance().removeDocument(Integer.parseInt(id)) == null)
-			throw new RuntimeException("Document " + id + " not found");
+	private Response deleteAccount() {
+		Response res;
+		if (DatabaseManager.getInstance().removeDocument(Integer.parseInt(id)) == null) {
+			res = Response.noContent().build();
+		}
+		else {
+			res = Response.ok().build();
+		}
+		
+		return res;
 	}
 	
-	private Response putAndGetResponse(Document document) {
+	private Response postAndGetResponse(Document document) {
 		Response res;
 			Document oldDocument = DatabaseManager.getInstance().findDocument(Integer.parseInt(id));
 			if(oldDocument != null) {
-				DatabaseManager.getInstance().updateDocument(document, oldDocument);
-				res = Response.ok().build();
+				if(DatabaseManager.getInstance().updateDocument(document, oldDocument)) {
+					res = Response.ok().build();
+				}
+				else {
+					res = Response.noContent().build();
+				}
 			} else {
-				DatabaseManager.getInstance().addNewDocument(document);
-				res = Response.created(uriInfo.getAbsolutePath()).build();
+				if(DatabaseManager.getInstance().addNewDocument(document)) {
+					res = Response.ok().build();
+				}
+				else {
+					res = Response.noContent().build();
+				}
 			}		
 		return res;
 	}
