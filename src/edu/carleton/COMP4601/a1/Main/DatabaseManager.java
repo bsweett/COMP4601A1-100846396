@@ -3,7 +3,6 @@ package edu.carleton.COMP4601.a1.Main;
 import java.net.UnknownHostException;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -29,6 +28,7 @@ public class DatabaseManager {
 	private DB db;
 	private MongoClient mongoClient;
 	private static DatabaseManager instance;
+	private final String DOCUMENTS = "documents";
 
 	public DatabaseManager() {
 
@@ -41,26 +41,10 @@ public class DatabaseManager {
 
 	}
 
-	public DBCollection getDocumentCollection() {
-
-		DBCollection col;
-
-		if (db.collectionExists("documents")) {
-			col = db.getCollection("documents");
-			col.setObjectClass(Document.class);
-			return col;
-		} else {
-			DBObject options = BasicDBObjectBuilder.start().add("capped", false).add("size", 1000000001).get();
-			col = db.createCollection("documents", options);
-			col.setObjectClass(Document.class);
-			return col;
-		}
-	}
-
 	public boolean addNewDocument(Document document) {
 
 		try {
-			DBCollection col = this.getDocumentCollection();
+			DBCollection col = db.getCollection(DOCUMENTS);
 			col.insert(buildDBObject(document));
 			
 		} catch (MongoException e) {
@@ -74,7 +58,7 @@ public class DatabaseManager {
 	public boolean updateDocument(Document newDocument, Document oldDocument) {
 
 		try {
-			DBCollection col = this.getDocumentCollection();
+			DBCollection col = db.getCollection(DOCUMENTS);
 			col.update(buildDBObject(oldDocument), buildDBObject(newDocument));
 
 		} catch (MongoException e) {
@@ -89,7 +73,7 @@ public class DatabaseManager {
 
 		try {
 			BasicDBObject query = new BasicDBObject("id", id);
-			DBCollection col = this.getDocumentCollection();
+			DBCollection col = db.getCollection(DOCUMENTS);
 			DBObject result = col.findAndRemove(query);
 			return new Document(result.toMap());
 			
@@ -104,7 +88,7 @@ public class DatabaseManager {
 		try {
 
 			BasicDBObject query = new BasicDBObject("id", id);
-			DBCollection col = this.getDocumentCollection();
+			DBCollection col = db.getCollection(DOCUMENTS);
 			DBObject result = col.findOne(query);
 
 			if(result != null) {
@@ -120,7 +104,7 @@ public class DatabaseManager {
 	}
 
 	public int getDocumentCollectionSize() {
-		DBCollection col = this.getDocumentCollection();
+		DBCollection col = db.getCollection(DOCUMENTS);
 		return (int) col.getCount();
 	}
 	
@@ -151,5 +135,9 @@ public class DatabaseManager {
 			this.mongoClient.close();
 		}
 
+	}
+	
+	public int getNextIndex() {
+		return getDocumentCollectionSize() + 1;
 	}
 }

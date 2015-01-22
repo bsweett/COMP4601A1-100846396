@@ -2,7 +2,6 @@ package edu.carleton.COMP4601.a1.Main;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
@@ -19,6 +18,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import javax.xml.bind.JAXBElement;
 
 import edu.carleton.COMP4601.a1.Model.Document;
 
@@ -81,24 +81,41 @@ public class SDA {
 	}
 	
 	@POST
-	public DocumentAction postDocument(@FormParam("id") String id,
-			@FormParam("name") String name,
-			@FormParam("text") String text,
-		//	@FormParam("tags") ArrayList<String> tags,
-		//	@FormParam("links") ArrayList<String> links,
-			@Context HttpServletResponse servletResponse) throws IOException {
-
-		return new DocumentAction(uriInfo, request, id);
+	@Consumes(MediaType.APPLICATION_XML)
+	public Response createDocument(JAXBElement<Document> doc) {
+		Response res;
+		Document document = doc.getValue();
+		document.setId(DatabaseManager.getInstance().getNextIndex());
+		//System.out.println("Links: " + d.getLinks().size() + "tags: " + d.getTags().size());
+		
+		if(DatabaseManager.getInstance().addNewDocument(document)) {
+			res = Response.ok().build();
+		}
+		else {
+			res = Response.noContent().build();
+		}
+		
+		return res;
 	}
-	
-	@PUT
-	public DocumentAction updateDocument(@FormParam("id") String id,
-			@FormParam("name") String name,
-			@FormParam("text") String text,
-		//	@FormParam("tags") ArrayList<String> tags,
-		//	@FormParam("links") ArrayList<String> links,
-			@Context HttpServletResponse servletResponse) throws IOException {
 
-		return new DocumentAction(uriInfo, request, id);
+	@PUT
+	@Consumes(MediaType.APPLICATION_XML)
+	public Response updateDocument(JAXBElement<Document> doc) {
+		Response res;
+		Document newDocument = doc.getValue();
+		Document oldDocument = DatabaseManager.getInstance().findDocument(newDocument.getId());
+		
+		if(oldDocument == null) {
+			res = Response.noContent().build();
+		}
+		else {
+			if(DatabaseManager.getInstance().updateDocument(newDocument, oldDocument)) {
+				res = Response.ok().build();
+			}
+			else {
+				res = Response.noContent().build();
+			}
+		}
+		return res;
 	}
 }
