@@ -1,10 +1,12 @@
 package edu.carleton.COMP4601.a1.Main;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
@@ -93,6 +95,28 @@ public class DatabaseManager {
 
 			if(result != null) {
 				return new Document(result.toMap());
+			}
+
+			return null;
+		} catch (MongoException e) {
+			System.out.println("MongoException: " + e.getLocalizedMessage());
+			return null;
+		}
+
+	}
+	
+	public ArrayList<Document> getDocuments() {
+
+		try {
+			DBCollection col = db.getCollection(DOCUMENTS);
+			DBCursor result = col.find();
+			
+			if(result != null) {
+				ArrayList<Document> documents = new ArrayList<Document>();
+				while(result.hasNext()) {
+					documents.add(new Document(result.next().toMap()));
+				}
+				return documents;
 			}
 
 			return null;

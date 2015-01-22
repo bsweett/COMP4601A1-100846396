@@ -1,12 +1,9 @@
 package edu.carleton.COMP4601.a1.Main;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -57,27 +54,75 @@ public class SDA {
 	@GET
 	@Path("documents")
 	@Produces(MediaType.APPLICATION_XML)
+	@Consumes(MediaType.APPLICATION_XML)
 	public ArrayList<Document> getDocumentsXML() {
-		return null;
+		ArrayList<Document> documents = DatabaseManager.getInstance().getDocuments();
+		
+		if(documents == null) {
+			throw new RuntimeException("No documents exist");
+		}
+		
+		return documents;
 	}
 	
 	@GET
 	@Path("documents")
 	@Produces(MediaType.TEXT_HTML)
-	public ArrayList<Document> getDocumentsHTML() {
-		return null;
+	@Consumes(MediaType.APPLICATION_XML)
+	public String getDocumentsHTML() {
+		ArrayList<Document> documents = DatabaseManager.getInstance().getDocuments();
+		
+		if(documents == null) {
+			throw new RuntimeException("No documents exist");
+		}
+		
+		return documentsToHTML(documents);
 	}
-	
+	/*
 	@GET
 	@Path("{id}")
 	public DocumentAction getDocument(@PathParam("id") String id) {
 		return new DocumentAction(uriInfo, request, id);
 	}
+	*/
+	@GET
+	@Path("{id}")
+	@Produces(MediaType.APPLICATION_XML)
+	@Consumes(MediaType.APPLICATION_XML)
+	public Document getDocumentXML(@PathParam("id") String id) {
+		Document a = DatabaseManager.getInstance().findDocument(Integer.parseInt(id));
+		if (a == null) {
+			throw new RuntimeException("No such Document: " + id);
+		}
+		return a;
+	}
+	
+	@GET
+	@Path("{id}")
+	@Produces(MediaType.TEXT_HTML)
+	@Consumes(MediaType.APPLICATION_XML)
+	public String getDocumentHTML(@PathParam("id") String id) {
+		Document d = DatabaseManager.getInstance().findDocument(Integer.parseInt(id));
+		if (d == null) {
+			throw new RuntimeException("No such Document: " + id);
+		}
+		
+		return documentToHTML(d);
+	}
 	
 	@DELETE
 	@Path("{id}")
-	public DocumentAction deleteDocument(@PathParam("id") String id) {
-		return new DocumentAction(uriInfo, request, id);
+	@Consumes(MediaType.APPLICATION_XML)
+	private Response deleteAccount(@PathParam("id") String id) {
+		Response res;
+		if (DatabaseManager.getInstance().removeDocument(Integer.parseInt(id)) == null) {
+			res = Response.noContent().build();
+		}
+		else {
+			res = Response.ok().build();
+		}
+		
+		return res;
 	}
 	
 	@POST
@@ -117,5 +162,67 @@ public class SDA {
 			}
 		}
 		return res;
+	}
+	
+	public String documentToHTML(Document d) {
+		StringBuilder htmlBuilder = new StringBuilder();
+		htmlBuilder.append("<html>");
+		htmlBuilder.append("<head><title>" + d.getName() + "</title></head>");
+		htmlBuilder.append("<body><h1>" + d.getName() + "</h1>");
+		htmlBuilder.append("<p>" + d.getText() + "</p>");
+		htmlBuilder.append("<h1> Links </h1>");
+		htmlBuilder.append("<ul>");
+		for (String s : d.getLinks())
+		{
+			htmlBuilder.append("<li>");
+			htmlBuilder.append(s);
+			htmlBuilder.append("</li>");
+		}
+		htmlBuilder.append("</ul>");
+		htmlBuilder.append("<h1> Tags </h1>");
+		htmlBuilder.append("<ul>");
+		for (String s : d.getTags())
+		{
+			htmlBuilder.append("<li>");
+			htmlBuilder.append(s);
+			htmlBuilder.append("</li>");
+		}
+		htmlBuilder.append("</ul></body>");
+		htmlBuilder.append("</html>");
+		
+		return htmlBuilder.toString();
+	}
+	
+	public String documentsToHTML(ArrayList<Document> documents) {
+		StringBuilder htmlBuilder = new StringBuilder();
+		htmlBuilder.append("<html>");
+		htmlBuilder.append("<head><title> All Documents </title></head>");
+		htmlBuilder.append("<body>");
+		for(Document d : documents) {
+			htmlBuilder.append("<h1>" + d.getName() + "</h1>");
+			htmlBuilder.append("<p>" + d.getText() + "</p>");
+			htmlBuilder.append("<h1> Links </h1>");
+			htmlBuilder.append("<ul>");
+			for (String s : d.getLinks())
+			{
+				htmlBuilder.append("<li>");
+				htmlBuilder.append(s);
+				htmlBuilder.append("</li>");
+			}
+			htmlBuilder.append("</ul>");
+			htmlBuilder.append("<h1> Tags </h1>");
+			htmlBuilder.append("<ul>");
+			for (String s : d.getTags())
+			{
+				htmlBuilder.append("<li>");
+				htmlBuilder.append(s);
+				htmlBuilder.append("</li>");
+			}
+			htmlBuilder.append("</ul>");
+		}
+		htmlBuilder.append("</body>");
+		htmlBuilder.append("</html>");
+		
+		return htmlBuilder.toString();
 	}
 }
