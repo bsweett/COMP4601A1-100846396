@@ -15,9 +15,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Unmarshaller;
 
 import edu.carleton.COMP4601.a1.Model.Document;
+import edu.carleton.COMP4601.a1.Model.DocumentCollection;
 
 @Path("/sda")
 public class SDA {
@@ -131,7 +134,8 @@ public class SDA {
 		Response res;
 		Document document = doc.getValue();
 		document.setId(DatabaseManager.getInstance().getNextIndex());
-		//System.out.println("Links: " + d.getLinks().size() + "tags: " + d.getTags().size());
+		
+		System.out.println("Links: " + document.getLinks().size() + "tags: " + document.getTags().size());
 		
 		if(DatabaseManager.getInstance().addNewDocument(document)) {
 			res = Response.ok().build();

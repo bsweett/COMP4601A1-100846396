@@ -3,15 +3,21 @@ package edu.carleton.COMP4601.a1.Model;
 import java.util.ArrayList;
 import java.util.Map;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement
+@XmlRootElement(name = "document")
+@XmlAccessorType (XmlAccessType.FIELD)
 public class Document {
 	private Integer id;
 	private Integer score;
 	private String name;
 	private String text;
+	@XmlElement(name = "tags")
 	private ArrayList<String> tags;
+	@XmlElement(name = "links")
 	private ArrayList<String> links;
 
 	public Document() {
