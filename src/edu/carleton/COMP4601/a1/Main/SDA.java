@@ -1,6 +1,7 @@
 package edu.carleton.COMP4601.a1.Main;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -15,12 +16,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
 
 import edu.carleton.COMP4601.a1.Model.Document;
-import edu.carleton.COMP4601.a1.Model.DocumentCollection;
 
 @Path("/sda")
 public class SDA {
@@ -81,13 +79,35 @@ public class SDA {
 		
 		return documentsToHTML(documents);
 	}
-	/*
+	
 	@GET
-	@Path("{id}")
-	public DocumentAction getDocument(@PathParam("id") String id) {
-		return new DocumentAction(uriInfo, request, id);
+	@Path("search/{tags}")
+	@Produces(MediaType.APPLICATION_XML)
+	@Consumes(MediaType.APPLICATION_XML)
+	public ArrayList<Document> getDocumentsByTagXML(@PathParam("tags") String id) {
+		ArrayList<Document> documents = DatabaseManager.getInstance().getDocuments();
+		
+		if(documents == null) {
+			throw new RuntimeException("No documents exist");
+		}
+		
+		return documents;
 	}
-	*/
+	
+	@GET
+	@Path("search/{tags}")
+	@Produces(MediaType.TEXT_HTML)
+	@Consumes(MediaType.APPLICATION_XML)
+	public String getDocumentsByTagHTML(@PathParam("tags") String tags) {
+		ArrayList<Document> documents = DatabaseManager.getInstance().findDocumentsByTag(splitTags(tags));
+		
+		if(documents == null) {
+			throw new RuntimeException("No documents exist");
+		}
+		
+		return documentsToHTML(documents);
+	}
+
 	@GET
 	@Path("{id}")
 	@Produces(MediaType.APPLICATION_XML)
@@ -148,17 +168,18 @@ public class SDA {
 	}
 
 	@PUT
+	@Path("{id}")
 	@Consumes(MediaType.APPLICATION_XML)
-	public Response updateDocument(JAXBElement<Document> doc) {
+	public Response updateDocument(@PathParam("id") String id, JAXBElement<Document> doc) {
 		Response res;
-		Document newDocument = doc.getValue();
-		Document oldDocument = DatabaseManager.getInstance().findDocument(newDocument.getId());
+		Document updatedDocument = doc.getValue();
+		Document existingDocument = DatabaseManager.getInstance().findDocument(Integer.parseInt(id));
 		
-		if(oldDocument == null) {
+		if(existingDocument == null) {
 			res = Response.noContent().build();
 		}
 		else {
-			if(DatabaseManager.getInstance().updateDocument(newDocument, oldDocument)) {
+			if(DatabaseManager.getInstance().updateDocument(updatedDocument, existingDocument)) {
 				res = Response.ok().build();
 			}
 			else {
@@ -168,7 +189,7 @@ public class SDA {
 		return res;
 	}
 	
-	public String documentToHTML(Document d) {
+	private String documentToHTML(Document d) {
 		StringBuilder htmlBuilder = new StringBuilder();
 		htmlBuilder.append("<html>");
 		htmlBuilder.append("<head><title>" + d.getName() + "</title></head>");
@@ -197,7 +218,8 @@ public class SDA {
 		return htmlBuilder.toString();
 	}
 	
-	public String documentsToHTML(ArrayList<Document> documents) {
+	private String documentsToHTML(ArrayList<Document> documents) {
+		System.out.println("Documents lenght is: " + documents.size());
 		StringBuilder htmlBuilder = new StringBuilder();
 		htmlBuilder.append("<html>");
 		htmlBuilder.append("<head><title> All Documents </title></head>");
@@ -227,6 +249,13 @@ public class SDA {
 		htmlBuilder.append("</body>");
 		htmlBuilder.append("</html>");
 		
+		System.out.println(htmlBuilder.toString());
 		return htmlBuilder.toString();
+	}
+	
+	private ArrayList<String> splitTags(String tags) {
+		String[] tagArray = tags.split(":");
+		ArrayList<String> list = new ArrayList<String>(Arrays.asList(tagArray));
+		return list;
 	}
 }

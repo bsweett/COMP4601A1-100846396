@@ -105,6 +105,30 @@ public class DatabaseManager {
 
 	}
 	
+	public ArrayList<Document> findDocumentsByTag(ArrayList<String> tags) {
+
+		try {
+		ArrayList<Document> documents = new ArrayList<Document>();
+		DBCollection col = db.getCollection(DOCUMENTS);
+		BasicDBObject multipleTagsQuery = new BasicDBObject("tags", new BasicDBObject("$all", tags));
+		System.out.println("***** Match Multiple Array Elements: ");
+		
+		DBCursor cursor = col.find(multipleTagsQuery);
+			if(cursor.hasNext()) {
+				while (cursor.hasNext()) {
+					documents.add(new Document(cursor.next().toMap()));
+				}
+				return documents;
+			}
+			else {
+				return null;
+			}
+		} catch (MongoException e) {
+			System.out.println("MongoException: " + e.getLocalizedMessage());
+			return null;
+		}
+	}
+	
 	public ArrayList<Document> getDocuments() {
 
 		try {
