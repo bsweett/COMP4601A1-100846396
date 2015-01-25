@@ -1,8 +1,10 @@
 package edu.carleton.COMP4601.a1.Main;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -28,6 +30,7 @@ public class SDA {
 	@Context
 	Request request;
 	
+	final private String PATH = "http://localhost:8080/COMP4601A1-100846396/rest/sda";
 	private String name;
 
 	public SDA() {
@@ -74,7 +77,7 @@ public class SDA {
 		ArrayList<Document> documents = DatabaseManager.getInstance().getDocuments();
 		
 		if(documents == null) {
-			throw new RuntimeException("No documents exist");
+			return get404HTML();
 		}
 		
 		return documentsToHTML(documents);
@@ -84,8 +87,8 @@ public class SDA {
 	@Path("search/{tags}")
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes(MediaType.APPLICATION_XML)
-	public ArrayList<Document> getDocumentsByTagXML(@PathParam("tags") String id) {
-		ArrayList<Document> documents = DatabaseManager.getInstance().getDocuments();
+	public ArrayList<Document> getDocumentsByTagXML(@PathParam("tags") String tags) {
+		ArrayList<Document> documents = DatabaseManager.getInstance().findDocumentsByTag(splitTags(tags));
 		
 		if(documents == null) {
 			throw new RuntimeException("No documents exist");
@@ -102,7 +105,7 @@ public class SDA {
 		ArrayList<Document> documents = DatabaseManager.getInstance().findDocumentsByTag(splitTags(tags));
 		
 		if(documents == null) {
-			throw new RuntimeException("No documents exist");
+			return get404HTML();
 		}
 		
 		return documentsToHTML(documents);
@@ -124,10 +127,10 @@ public class SDA {
 	@Path("{id}")
 	@Produces(MediaType.TEXT_HTML)
 	@Consumes(MediaType.APPLICATION_XML)
-	public String getDocumentHTML(@PathParam("id") String id) {
+	public String getDocumentHTML(@PathParam("id") String id, @Context HttpServletResponse servletResponse) throws IOException {
 		Document d = DatabaseManager.getInstance().findDocument(Integer.parseInt(id));
 		if (d == null) {
-			throw new RuntimeException("No such Document: " + id);
+			return get404HTML();
 		}
 		
 		return documentToHTML(d);
@@ -207,7 +210,11 @@ public class SDA {
 		for (String s : d.getLinks())
 		{
 			htmlBuilder.append("<li>");
+			htmlBuilder.append("<a href=\"" + PATH);
 			htmlBuilder.append(s);
+			htmlBuilder.append("\">");
+			htmlBuilder.append(PATH + s);
+			htmlBuilder.append("</a>");
 			htmlBuilder.append("</li>");
 		}
 		htmlBuilder.append("</ul>");
@@ -221,7 +228,7 @@ public class SDA {
 		}
 		htmlBuilder.append("</ul></body>");
 		htmlBuilder.append("</html>");
-		
+		System.out.println(htmlBuilder.toString());
 		return htmlBuilder.toString();
 	}
 	
@@ -239,7 +246,11 @@ public class SDA {
 			for (String s : d.getLinks())
 			{
 				htmlBuilder.append("<li>");
+				htmlBuilder.append("<a href=\"" + PATH);
 				htmlBuilder.append(s);
+				htmlBuilder.append("\">");
+				htmlBuilder.append(PATH + s);
+				htmlBuilder.append("</a>");
 				htmlBuilder.append("</li>");
 			}
 			htmlBuilder.append("</ul>");
@@ -264,5 +275,20 @@ public class SDA {
 		String[] tagArray = tags.split(":");
 		ArrayList<String> list = new ArrayList<String>(Arrays.asList(tagArray));
 		return list;
+	}
+	
+	private String get404HTML() {
+		StringBuilder htmlBuilder = new StringBuilder();
+		htmlBuilder.append("<head><title>404</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1\">"
+				+ "<script type=\"application/x-javascript\"> addEventListener(\"load\", function() { setTimeout(hideURLbar, 0); }, false); function "
+				+ "hideURLbar(){ window.scrollTo(0,1); } </script><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />"
+				+ "<link href='http://fonts.googleapis.com/css?family=Metal+Mania' rel='stylesheet' type='text/css'><style type=\"text/css\">body{font-family: "
+				+ "'Metal Mania', cursive;}body{background:skyblue;}.wrap{width:100%;margin-top:60px;}.logo h1{font-size:140px;color:yellow;text-align:center;"
+				+ "margin:40px 0 0 0;text-shadow:1px 1px 6px #555;}.logo p{color:white;font-size:15px;margin-top:1px;text-align:center;}.logo p span{color:lightgreen;}"
+				+ ".sub a{color:yellow;background:#06afd8;text-decoration:none;padding:5px;font-size:12px;font-family: arial, serif;font-weight:bold;}.footer{color:white;"
+				+ "position:absolute;right:10px;bottom:1px;}.footer a{color:yellow;}</style></head><body><div class=\"wrap\"><div class=\"logo\"><h1>404</h1>"
+				+ "<p>Sorry This was deadlink - Page not Found</p><div class=\"sub\"><p><a href=\"#\">Go Back to Home</a></p></div></div></div><div class=\"footer\">"
+				+ "Design by-<a href=\"http://w3layouts.com\">W3Layouts</a></div></body>");
+		return htmlBuilder.toString();
 	}
 }
