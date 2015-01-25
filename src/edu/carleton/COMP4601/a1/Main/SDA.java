@@ -135,9 +135,9 @@ public class SDA {
 	
 	@DELETE
 	@Path("{id}")
-	@Consumes(MediaType.APPLICATION_XML)
-	private Response deleteAccount(@PathParam("id") String id) {
+	public Response deleteAccount(@PathParam("id") String id) {
 		Response res;
+		
 		if (DatabaseManager.getInstance().removeDocument(Integer.parseInt(id)) == null) {
 			res = Response.noContent().build();
 		}
@@ -179,6 +179,13 @@ public class SDA {
 			res = Response.noContent().build();
 		}
 		else {
+			// These values are not send from the client 
+			// (assignment only states updating tags and links)
+			updatedDocument.setId(existingDocument.getId());
+			updatedDocument.setName(existingDocument.getName());
+			updatedDocument.setText(existingDocument.getText());
+			updatedDocument.setScore(existingDocument.getScore());
+			
 			if(DatabaseManager.getInstance().updateDocument(updatedDocument, existingDocument)) {
 				res = Response.ok().build();
 			}
