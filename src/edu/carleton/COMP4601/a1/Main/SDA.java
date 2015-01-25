@@ -287,7 +287,7 @@ public class SDA {
 				+ "margin:40px 0 0 0;text-shadow:1px 1px 6px #555;}.logo p{color:white;font-size:15px;margin-top:1px;text-align:center;}.logo p span{color:lightgreen;}"
 				+ ".sub a{color:yellow;background:#06afd8;text-decoration:none;padding:5px;font-size:12px;font-family: arial, serif;font-weight:bold;}.footer{color:white;"
 				+ "position:absolute;right:10px;bottom:1px;}.footer a{color:yellow;}</style></head><body><div class=\"wrap\"><div class=\"logo\"><h1>404</h1>"
-				+ "<p>Sorry This was deadlink - Page not Found</p><div class=\"sub\"><p><a href=\"#\">Go Back to Home</a></p></div></div></div><div class=\"footer\">"
+				+ "<p>Sorry document is dead - Document not found</p></div></div><div class=\"footer\">"
 				+ "Design by-<a href=\"http://w3layouts.com\">W3Layouts</a></div></body>");
 		return htmlBuilder.toString();
 	}
