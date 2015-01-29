@@ -165,7 +165,7 @@ public class SDA {
 			return documentToHTML(d);
 			
 		} catch (Exception e) {
-			return get500();
+			return get400();
 		}
 	}
 	
@@ -231,7 +231,7 @@ public class SDA {
 				}
 			}
 		} catch (Exception e) {
-			res = Response.serverError().build();
+			res = Response.notAcceptable(null).build();
 		}
 		
 		return res;
@@ -315,6 +315,7 @@ public class SDA {
 		return list;
 	}
 	
+	//Link not found
 	private String get404() {
 		StringBuilder htmlBuilder = new StringBuilder();
 		htmlBuilder.append("<head><title>404</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1\">"
@@ -330,8 +331,19 @@ public class SDA {
 		return htmlBuilder.toString();
 	}
 	
+	//Server error
 	private String get500() {
-		return "<html> " + "<title>" + "500" + "</title>" + "<body><h1>" + "Server Error" + "</body></h1>" + "</html> ";
+		return "<html> " + "<title>" + "500" + "</title>" + "<body><h1>" + "Server Error - 500" + "</body></h1>" + "</html> ";
+	}
+	
+	//Document not found
+	private String get204() {
+		return "<html> " + "<title>" + "204" + "</title>" + "<body><h1>" + "Document not found - 204" + "</body></h1>" + "</html> ";
+	}
+		
+	//Invalid Arguments
+	private String get400() {
+		return "<html> " + "<title>" + "400" + "</title>" + "<body><h1>" + "Bad Request 400" + "</body></h1>" + "</html> ";
 	}
 	
 }
