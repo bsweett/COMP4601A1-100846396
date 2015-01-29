@@ -110,6 +110,28 @@ public class SDA {
 		
 		return documentsToHTML(documents);
 	}
+	
+	@GET
+	@Path("delete/{tags}")
+	@Consumes(MediaType.APPLICATION_XML)
+	public Response deleteDocumentsByTagXML(@PathParam("tags") String tags) {
+		Response res;
+		ArrayList<Document> documents = DatabaseManager.getInstance().findDocumentsByTag(splitTags(tags));
+		
+		if(documents == null) {
+			return Response.noContent().build();
+		}
+		
+		res = Response.noContent().build();
+		
+		for(Document d : documents) {
+			if (DatabaseManager.getInstance().removeDocument(d.getId()) != null) {
+				res = Response.ok().build();
+			}
+		}
+		
+		return res;
+	}
 
 	@GET
 	@Path("{id}")
