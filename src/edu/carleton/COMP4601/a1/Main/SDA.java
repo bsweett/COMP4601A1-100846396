@@ -105,7 +105,7 @@ public class SDA {
 		ArrayList<Document> documents = DatabaseManager.getInstance().findDocumentsByTag(splitTags(tags));
 		
 		if(documents == null) {
-			return get404();
+			return get204();
 		}
 		
 		return documentsToHTML(documents);
@@ -159,13 +159,13 @@ public class SDA {
 		try{
 			Document d = DatabaseManager.getInstance().findDocument(Integer.parseInt(id));
 			if (d == null) {
-				return get404();
+				return get204();
 			}
 			
 			return documentToHTML(d);
 			
 		} catch (Exception e) {
-			return get400();
+			return get406();
 		}
 	}
 	
@@ -315,7 +315,7 @@ public class SDA {
 		return list;
 	}
 	
-	//Link not found
+	//Link not found HTML
 	private String get404() {
 		StringBuilder htmlBuilder = new StringBuilder();
 		htmlBuilder.append("<head><title>404</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1\">"
@@ -331,19 +331,42 @@ public class SDA {
 		return htmlBuilder.toString();
 	}
 	
-	//Server error
+	//Server error HTML
 	private String get500() {
 		return "<html> " + "<title>" + "500" + "</title>" + "<body><h1>" + "Server Error - 500" + "</body></h1>" + "</html> ";
 	}
 	
-	//Document not found
+	//Document not found HTML
 	private String get204() {
 		return "<html> " + "<title>" + "204" + "</title>" + "<body><h1>" + "Document not found - 204" + "</body></h1>" + "</html> ";
 	}
 		
-	//Invalid Arguments
-	private String get400() {
-		return "<html> " + "<title>" + "400" + "</title>" + "<body><h1>" + "Bad Request 400" + "</body></h1>" + "</html> ";
+	//Invalid Arguments HTML
+	private String get406() {
+		return "<html> " + "<title>" + "406" + "</title>" + "<body><h1>" + "Bad Request - 406" + "</body></h1>" + "</html> ";
 	}
+	
+	
+	//Link not found XML
+	private String linkNotFound() {
+		return "<?xml version=\"1.0\"?>" + "<code> " + "404" + " </code>" + "<status> " + "Link not found" + " </status>";
+	}
+	
+	//Server error XML
+	private String serverError() {
+		return "<?xml version=\"1.0\"?>" + "<code> " + "500" + " </code>" + "<status> " + "Server Error" + " </status>";
+	}
+	
+	//Document not found XML
+	private String documentNotFound() {
+		return "<?xml version=\"1.0\"?>" + "<code> " + "204" + " </code>" + "<status> " + "Document not found" + " </status>";
+	}
+		
+	//Invalid Arguments XML
+	private String badRequest() {
+		return "<?xml version=\"1.0\"?>" + "<code> " + "406" + " </code>" + "<status> " + "Bad Request" + " </status>";
+	}
+	
+	
 	
 }
