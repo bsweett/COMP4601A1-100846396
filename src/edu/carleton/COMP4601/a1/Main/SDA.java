@@ -30,7 +30,7 @@ public class SDA {
 	@Context
 	Request request;
 	
-	final private String PATH = "http://localhost:8080/COMP4601A1-100846396/rest/sda";
+	final private String PATH = "http://localhost:8080/COMP4601SDA/rest/sda";
 	private String name;
 
 	public SDA() {
@@ -77,7 +77,7 @@ public class SDA {
 		ArrayList<Document> documents = DatabaseManager.getInstance().getDocuments();
 		
 		if(documents == null) {
-			return get404HTML();
+			return get404();
 		}
 		
 		return documentsToHTML(documents);
@@ -105,7 +105,7 @@ public class SDA {
 		ArrayList<Document> documents = DatabaseManager.getInstance().findDocumentsByTag(splitTags(tags));
 		
 		if(documents == null) {
-			return get404HTML();
+			return get404();
 		}
 		
 		return documentsToHTML(documents);
@@ -116,11 +116,16 @@ public class SDA {
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes(MediaType.APPLICATION_XML)
 	public Document getDocumentXML(@PathParam("id") String id) {
-		Document a = DatabaseManager.getInstance().findDocument(Integer.parseInt(id));
-		if (a == null) {
-			throw new RuntimeException("No such Document: " + id);
+		try{
+			Document d = DatabaseManager.getInstance().findDocument(Integer.parseInt(id));
+			if (d == null) {
+				throw new RuntimeException("No such Document: " + id);
+			}
+			return d;
+		} catch (Exception e) {
+			throw new RuntimeException("Server error: " + id);
 		}
-		return a;
+		
 	}
 	
 	@GET
@@ -128,12 +133,18 @@ public class SDA {
 	@Produces(MediaType.TEXT_HTML)
 	@Consumes(MediaType.APPLICATION_XML)
 	public String getDocumentHTML(@PathParam("id") String id, @Context HttpServletResponse servletResponse) throws IOException {
-		Document d = DatabaseManager.getInstance().findDocument(Integer.parseInt(id));
-		if (d == null) {
-			return get404HTML();
-		}
 		
-		return documentToHTML(d);
+		try{
+			Document d = DatabaseManager.getInstance().findDocument(Integer.parseInt(id));
+			if (d == null) {
+				return get404();
+			}
+			
+			return documentToHTML(d);
+			
+		} catch (Exception e) {
+			return get500();
+		}
 	}
 	
 	@DELETE
@@ -176,26 +187,31 @@ public class SDA {
 	public Response updateDocument(@PathParam("id") String id, JAXBElement<Document> doc) {
 		Response res;
 		Document updatedDocument = doc.getValue();
-		Document existingDocument = DatabaseManager.getInstance().findDocument(Integer.parseInt(id));
 		
-		if(existingDocument == null) {
-			res = Response.noContent().build();
-		}
-		else {
-			// These values are not send from the client 
-			// (assignment only states updating tags and links)
-			updatedDocument.setId(existingDocument.getId());
-			updatedDocument.setName(existingDocument.getName());
-			updatedDocument.setText(existingDocument.getText());
-			updatedDocument.setScore(existingDocument.getScore());
-			
-			if(DatabaseManager.getInstance().updateDocument(updatedDocument, existingDocument)) {
-				res = Response.ok().build();
-			}
-			else {
+		try{
+			Document existingDocument = DatabaseManager.getInstance().findDocument(Integer.parseInt(id));
+			if(existingDocument == null) {
 				res = Response.noContent().build();
 			}
+			else {
+				// These values are not send from the client 
+				// (assignment only states updating tags and links)
+				updatedDocument.setId(existingDocument.getId());
+				updatedDocument.setName(existingDocument.getName());
+				updatedDocument.setText(existingDocument.getText());
+				updatedDocument.setScore(existingDocument.getScore());
+				
+				if(DatabaseManager.getInstance().updateDocument(updatedDocument, existingDocument)) {
+					res = Response.ok().build();
+				}
+				else {
+					res = Response.noContent().build();
+				}
+			}
+		} catch (Exception e) {
+			res = Response.serverError().build();
 		}
+		
 		return res;
 	}
 	
@@ -277,7 +293,7 @@ public class SDA {
 		return list;
 	}
 	
-	private String get404HTML() {
+	private String get404() {
 		StringBuilder htmlBuilder = new StringBuilder();
 		htmlBuilder.append("<head><title>404</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1\">"
 				+ "<script type=\"application/x-javascript\"> addEventListener(\"load\", function() { setTimeout(hideURLbar, 0); }, false); function "
@@ -291,4 +307,9 @@ public class SDA {
 				+ "Design by-<a href=\"http://w3layouts.com\">W3Layouts</a></div></body>");
 		return htmlBuilder.toString();
 	}
+	
+	private String get500() {
+		return "<html> " + "<title>" + "500" + "</title>" + "<body><h1>" + "Server Error" + "</body></h1>" + "</html> ";
+	}
+	
 }
