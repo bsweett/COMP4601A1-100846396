@@ -12,6 +12,8 @@ public class Action {
 
 	protected String id;
 
+	// Based action constructor
+	// Unused
 	public Action(UriInfo uriInfo, Request request, String id) {
 		this.uriInfo = uriInfo;
 		this.request = request;

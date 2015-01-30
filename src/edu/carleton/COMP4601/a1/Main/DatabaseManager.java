@@ -9,20 +9,22 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
-import com.mongodb.MongoException;
 
 import edu.carleton.COMP4601.a1.Model.Document;
 
 public class DatabaseManager {
 
+	// DB getter
 	public DB getDatabase() {
 		return db;
 	}
 
+	// DB setter
 	public void setDatabase(DB db) {
 		this.db = db;
 	}
 
+	// Singleton setter
 	public static void setInstance(DatabaseManager instance) {
 		DatabaseManager.instance = instance;
 	}
@@ -32,6 +34,7 @@ public class DatabaseManager {
 	private static DatabaseManager instance;
 	private final String DOCUMENTS = "documents";
 
+	// Constructor (only called once)
 	public DatabaseManager() {
 
 		try {
@@ -43,13 +46,14 @@ public class DatabaseManager {
 
 	}
 
+	// Adds a new document to the database
 	public boolean addNewDocument(Document document) {
 
 		try {
 			DBCollection col = db.getCollection(DOCUMENTS);
 			col.insert(buildDBObject(document));
-			
-		} catch (MongoException e) {
+
+		} catch (Exception e) {
 			System.out.println("MongoException: " + e.getLocalizedMessage());
 			return false;
 		}
@@ -57,13 +61,14 @@ public class DatabaseManager {
 		return true; 	
 	}
 
+	// Updates an existing document with a new document in the database
 	public boolean updateDocument(Document newDocument, Document oldDocument) {
 
 		try {
 			DBCollection col = db.getCollection(DOCUMENTS);
 			col.update(buildDBObject(oldDocument), buildDBObject(newDocument));
 
-		} catch (MongoException e) {
+		} catch (Exception e) {
 			System.out.println("MongoException: " + e.getLocalizedMessage());
 			return false;
 		}
@@ -71,20 +76,23 @@ public class DatabaseManager {
 		return true; 
 	}
 
+	// Removes an existing document by ID from the database
 	public Document removeDocument(Integer id) {	
 
 		try {
 			BasicDBObject query = new BasicDBObject("id", id);
 			DBCollection col = db.getCollection(DOCUMENTS);
 			DBObject result = col.findAndRemove(query);
-			return new Document(result.toMap());
-			
-		} catch (MongoException e) {
+			Document doc = new Document(result.toMap());
+			return doc;
+
+		} catch (Exception e) {
 			System.out.println("MongoException: " + e.getLocalizedMessage());
 			return null;
 		}
 	}
 
+	// Finds a document by ID in from the database
 	public Document findDocument(Integer id) {
 
 		try {
@@ -98,22 +106,22 @@ public class DatabaseManager {
 			}
 
 			return null;
-		} catch (MongoException e) {
+		} catch (Exception e) {
 			System.out.println("MongoException: " + e.getLocalizedMessage());
 			return null;
 		}
 
 	}
-	
+
+	// Finds a list of documents by a list of tags from the database
 	public ArrayList<Document> findDocumentsByTag(ArrayList<String> tags) {
 
 		try {
-		ArrayList<Document> documents = new ArrayList<Document>();
-		DBCollection col = db.getCollection(DOCUMENTS);
-		BasicDBObject multipleTagsQuery = new BasicDBObject("tags", new BasicDBObject("$all", tags));
-		System.out.println("***** Match Multiple Array Elements: ");
-		
-		DBCursor cursor = col.find(multipleTagsQuery);
+			ArrayList<Document> documents = new ArrayList<Document>();
+			DBCollection col = db.getCollection(DOCUMENTS);
+			BasicDBObject multipleTagsQuery = new BasicDBObject("tags", new BasicDBObject("$all", tags));
+
+			DBCursor cursor = col.find(multipleTagsQuery);
 			if(cursor.hasNext()) {
 				while (cursor.hasNext()) {
 					documents.add(new Document(cursor.next().toMap()));
@@ -123,18 +131,19 @@ public class DatabaseManager {
 			else {
 				return null;
 			}
-		} catch (MongoException e) {
+		} catch (Exception e) {
 			System.out.println("MongoException: " + e.getLocalizedMessage());
 			return null;
 		}
 	}
-	
+
+	// Gets a list of all the documents from the database
 	public ArrayList<Document> getDocuments() {
 
 		try {
 			DBCollection col = db.getCollection(DOCUMENTS);
 			DBCursor result = col.find();
-			
+
 			if(result != null) {
 				ArrayList<Document> documents = new ArrayList<Document>();
 				while(result.hasNext()) {
@@ -144,20 +153,22 @@ public class DatabaseManager {
 			}
 
 			return null;
-		} catch (MongoException e) {
+		} catch (Exception e) {
 			System.out.println("MongoException: " + e.getLocalizedMessage());
 			return null;
 		}
 
 	}
 
+	// Gets the document collection size
 	public int getDocumentCollectionSize() {
 		DBCollection col = db.getCollection(DOCUMENTS);
 		return (int) col.getCount();
 	}
-	
+
+	// Builds a DBObject from a give document
 	public BasicDBObject buildDBObject(Document document) {
-		
+
 		BasicDBObject newObj = new BasicDBObject();
 		newObj.put("id", document.getId());
 		newObj.put("name", document.getName());
@@ -166,9 +177,10 @@ public class DatabaseManager {
 		newObj.put("tags", document.getTags());
 		newObj.put("links", document.getLinks());
 		return newObj;
-		
+
 	}
 
+	// Gets this singleton instance
 	public static DatabaseManager getInstance() {
 
 		if (instance == null)
@@ -177,6 +189,7 @@ public class DatabaseManager {
 
 	}
 
+	// Stops the MongoDB Client
 	public void stopMongoClient() {
 
 		if(this.mongoClient != null) {
@@ -184,7 +197,8 @@ public class DatabaseManager {
 		}
 
 	}
-	
+
+	// Gets the next index from the document collection
 	public int getNextIndex() {
 		int id = getDocumentCollectionSize() + 1;
 		Document document = findDocument(id);
