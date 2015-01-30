@@ -186,6 +186,12 @@ public class DatabaseManager {
 	}
 	
 	public int getNextIndex() {
-		return getDocumentCollectionSize() + 1;
+		int id = getDocumentCollectionSize() + 1;
+		Document document = findDocument(id);
+		while(document != null) {
+			id++;
+			document = findDocument(id);
+		}
+		return id;
 	}
 }

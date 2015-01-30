@@ -191,8 +191,6 @@ public class SDA {
 		Document document = doc.getValue();
 		document.setId(DatabaseManager.getInstance().getNextIndex());
 		
-		System.out.println("Links: " + document.getLinks().size() + "tags: " + document.getTags().size());
-		
 		if(DatabaseManager.getInstance().addNewDocument(document)) {
 			res = Response.ok().build();
 		}
@@ -266,12 +264,11 @@ public class SDA {
 		}
 		htmlBuilder.append("</ul></body>");
 		htmlBuilder.append("</html>");
-		System.out.println(htmlBuilder.toString());
+
 		return htmlBuilder.toString();
 	}
 	
 	private String documentsToHTML(ArrayList<Document> documents) {
-		System.out.println("Documents lenght is: " + documents.size());
 		StringBuilder htmlBuilder = new StringBuilder();
 		htmlBuilder.append("<html>");
 		htmlBuilder.append("<head><title> All Documents </title></head>");
@@ -304,8 +301,7 @@ public class SDA {
 		}
 		htmlBuilder.append("</body>");
 		htmlBuilder.append("</html>");
-		
-		System.out.println(htmlBuilder.toString());
+	
 		return htmlBuilder.toString();
 	}
 	
